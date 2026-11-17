@@ -15,6 +15,14 @@ jobs:
           git clone --depth 1 https://github.com/theos/theos.git "$HOME/theos"
           git clone --depth 1 https://github.com/theos/sdks.git "$HOME/theos/sdks"
 
+      - name: Download original IPA input
+        run: |
+          mkdir -p input
+          curl --fail --location --retry 3 \
+            -o input/original.ipa \
+            https://github.com/mowang7426/Dopamine-Wallpaper/releases/download/v0.1.0-input/original.ipa
+          shasum -a 256 input/original.ipa
+
       - name: Build hook
         env:
           THEOS: ${{ env.HOME }}/theos
@@ -26,7 +34,7 @@ jobs:
         run: |
           mkdir -p output
           cp .theos/obj/arm64/DopamineWallpaper.dylib output/
-          cp input/*.ipa output/original.ipa
+          cp input/original.ipa output/original.ipa
           cp REPORT.md output/
 
       - name: Upload build inputs
