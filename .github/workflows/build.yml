@@ -1,0 +1,37 @@
+name: Build wallpaper hook
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: macos-14
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install build dependencies
+        run: |
+          brew install ldid
+          git clone --depth 1 https://github.com/theos/theos.git "$HOME/theos"
+          git clone --depth 1 https://github.com/theos/sdks.git "$HOME/theos/sdks"
+
+      - name: Build hook
+        env:
+          THEOS: ${{ env.HOME }}/theos
+        run: |
+          make -C . package FINALPACKAGE=1
+          test -f .theos/obj/arm64/DopamineWallpaper.dylib
+
+      - name: Package build inputs
+        run: |
+          mkdir -p output
+          cp .theos/obj/arm64/DopamineWallpaper.dylib output/
+          cp input/*.ipa output/original.ipa
+          cp REPORT.md output/
+
+      - name: Upload build inputs
+        uses: actions/upload-artifact@v4
+        with:
+          name: dopamine-wallpaper-build
+          path: output
+          retention-days: 7
